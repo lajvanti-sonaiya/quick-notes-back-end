@@ -1,5 +1,7 @@
- const successResponse = (
-  res,
+import type { Response } from "express";
+
+const successResponse = (
+  res: Response,
   { status = 200, message = "Success", data = null } = {}
 ) => {
   return res.status(status).json({
@@ -9,8 +11,8 @@
   });
 };
 
- const errorResponse = (
-  res,
+const errorResponse = (
+  res: Response,
   { status = 500, message = "Something went wrong", error = null } = {}
 ) => {
   return res.status(status).json({
@@ -19,4 +21,4 @@
     error,
   });
 };
-module.exports={successResponse,errorResponse}
+module.exports = { successResponse, errorResponse };

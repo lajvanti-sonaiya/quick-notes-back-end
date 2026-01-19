@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
-const required = (key) => {
+const required = (key:string):string => {
     console.log("process.env")
   const value = process.env[key];
   if (!value) {

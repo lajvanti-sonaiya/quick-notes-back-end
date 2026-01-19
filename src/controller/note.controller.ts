@@ -1,7 +1,8 @@
+import type { Request, Response, NextFunction } from "express";
 const Note = require("../models/note.model");
 const { successResponse } = require("../utills/response");
 
-const createNote = async (req, res, next) => {
+const createNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const note = await new Note(req.body);
     await note.save();
@@ -20,10 +21,10 @@ const createNote = async (req, res, next) => {
   }
 };
 
-const getNote = async (req, res, next) => {
+const getNote = async (req:Request, res:Response, next:NextFunction) => {
   try {
     const { category, search, page, limit } = req.query;
-    let filter = {};
+    let filter :Record<string, any>= {};
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
@@ -77,7 +78,7 @@ const getNote = async (req, res, next) => {
   }
 };
 
-const updateNote = async (req, res, next) => {
+const updateNote = async (req:Request, res:Response, next:NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -106,7 +107,7 @@ const updateNote = async (req, res, next) => {
   }
 };
 
-const deleteNote = async (req, res, next) => {
+const deleteNote = async (req:Request, res:Response, next:NextFunction) => {
   try {
     const { id } = req.params;
 
