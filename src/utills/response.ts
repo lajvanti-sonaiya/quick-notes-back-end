@@ -11,6 +11,13 @@ const successResponse = (
   });
 };
 
+export const formatApiResponse = (data: any, message?: string) => {
+  return {
+    data,
+    message
+  }
+}
+
 const errorResponse = (
   res: Response,
   { status = 500, message = "Something went wrong", error = null } = {}
