@@ -22,8 +22,17 @@ const noteSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deletedAt:{
+      type:Date,
+      default:null
+    }
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Note = mongoose.model("note", noteSchema);

@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import redis from "../utills/redisConnection";
 const Note = require("../models/note.model");
 const { successResponse } = require("../utills/response");
 
@@ -21,13 +22,13 @@ const createNote = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getNote = async (req:Request, res:Response, next:NextFunction) => {
+const getNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { category, search, page, limit } = req.query;
-    let filter :Record<string, any>= {};
+    let filter: Record<string, any> = {isDeleted:false};
 
-    const pageNumber = Number(page);
-    const limitNumber = Number(limit);
+    const pageNumber = Number(page??0) ;
+    const limitNumber = Number(limit??10);
     const skip = pageNumber * limitNumber;
 
     if (category) {
@@ -41,6 +42,17 @@ const getNote = async (req:Request, res:Response, next:NextFunction) => {
       ];
     }
 
+    //redis key created 
+    const redisKey = `notes:${JSON.stringify(filter)}:page:${pageNumber}:limit:${limitNumber}`;
+  
+    const cached = await redis.get(redisKey);
+    if (cached) {
+      return successResponse(res, {
+        message: "Notes fetched successfully (from cache)",
+        data: JSON.parse(cached),
+      });
+    }
+
     const [notes, total] = await Promise.all([
       Note.find(filter)
         .sort({ isPinned: -1, createdAt: -1 })
@@ -49,9 +61,15 @@ const getNote = async (req:Request, res:Response, next:NextFunction) => {
 
       Note.countDocuments(filter),
     ]);
+    const responseData = {
+      notes,
+      total,
+      page: pageNumber,
+      limit: limitNumber,
+    };
 
-    console.log("🚀 ~ getNote ~ filter:", filter);
-    console.log("🚀 ~ getNote ~ notes:", notes.length);
+    // if key is not available in redis create new 
+    await redis.set(redisKey, JSON.stringify(responseData),'EX', 60);
 
     return successResponse(res, {
       message: notes.length ? "Notes fetched successfully" : "No notes found",
@@ -78,7 +96,7 @@ const getNote = async (req:Request, res:Response, next:NextFunction) => {
   }
 };
 
-const updateNote = async (req:Request, res:Response, next:NextFunction) => {
+const updateNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -107,11 +125,19 @@ const updateNote = async (req:Request, res:Response, next:NextFunction) => {
   }
 };
 
-const deleteNote = async (req:Request, res:Response, next:NextFunction) => {
+const deleteNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
-    const deletedNote = await Note.findByIdAndDelete(id);
+    //hard delete
+    // const deletedNote = await Note.findByIdAndDelete(id);
+
+    //soft delete
+     const deletedNote = await Note.findByIdAndUpdate(
+      id,
+      { isDeleted: true, deletedAt: new Date() },
+      { new: true } 
+    );
     console.log("🚀 ~ deleteNote ~ deletedNote:", deletedNote);
 
     if (!deletedNote) {
