@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import type { Socket } from "socket.io";
+import { formaterrorResponse } from "./utills/response";
 
 const express = require("express");
 const cors = require("cors");
@@ -22,10 +23,10 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket: Socket) => {
-  console.log("connected:", socket.id);
+  console.log("socket connected:", socket.id);
 
   socket.on("disconnect", () => {
-    console.log("disconnected:", socket.id);
+    console.log("socket disconnected:", socket.id);
   });
 });
 app.set("io", io);
@@ -43,11 +44,8 @@ app.use("/api/notes", noteRouter);
 //global error handler
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   console.log("🚀 ~ error:", error);
-  res.status(error.statusCode || 500).json({
-    status: false,
-    message: "something went wrong",
-    error: error.message,
-  });
+  res.status(error.statusCode || 500)
+    .json(formaterrorResponse(error, error.message || "something went wrong"));
 });
 
 //global exception handler

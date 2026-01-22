@@ -1,9 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import redis from "../utills/redis/redisConnection";
-import { formatApiResponse } from "../utills/response";
 import { clearNotesCache } from "../utills/redis/redisHelper";
+import { formatSuccessResponse } from "../utills/response";
 const Note = require("../models/note.model");
-const { successResponse } = require("../utills/response");
 
 const createNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -16,11 +15,9 @@ const createNote = async (req: Request, res: Response, next: NextFunction) => {
     // clear redis cache
     await clearNotesCache();
 
-    return successResponse(res, {
-      status: 201,
-      message: "Note created successfully",
-      data: note,
-    });
+    return res
+      .status(201)
+      .json(formatSuccessResponse(note, "Note created successfully"));
   } catch (error) {
     console.log("🚀 ~ createNote ~ error:", error);
     next(error);
@@ -52,10 +49,14 @@ const getNote = async (req: Request, res: Response, next: NextFunction) => {
 
     const cached = await redis.get(redisKey);
     if (cached) {
-      return successResponse(res, {
-        message: "Notes fetched successfully (from cache)",
-        data: JSON.parse(cached),
-      });
+      return res
+        .status(200)
+        .json(
+          formatSuccessResponse(
+            JSON.parse(cached),
+            "Notes fetched successfully (from cache)",
+          ),
+        );
     }
 
     const [notes, total] = await Promise.all([
@@ -76,8 +77,20 @@ const getNote = async (req: Request, res: Response, next: NextFunction) => {
     // if key is not available in redis create new
     await redis.set(redisKey, JSON.stringify(responseData), "EX", 600);
 
+    // return res.status(200).json(
+    //   formatApiResponse(
+    //     {
+    //       notes,
+    //       total,
+    //       page: pageNumber,
+    //       limit: limitNumber,
+    //     },
+    //     notes.length ? "Notes fetched successfully" : "No notes found",
+    //   ),
+    // );
+
     return res.status(200).json(
-      formatApiResponse(
+      formatSuccessResponse(
         {
           notes,
           total,
@@ -87,15 +100,6 @@ const getNote = async (req: Request, res: Response, next: NextFunction) => {
         notes.length ? "Notes fetched successfully" : "No notes found",
       ),
     );
-    // return successResponse(res, {
-    //   message: notes.length ? "Notes fetched successfully" : "No notes found",
-    // data: {
-    //   notes,
-    //   total,
-    //   page: pageNumber,
-    //   limit: limitNumber,
-    // },
-    // });
   } catch (error) {
     console.log("🚀 ~ getNote ~ error:", error);
     next(error);
@@ -111,11 +115,9 @@ const updateNote = async (req: Request, res: Response, next: NextFunction) => {
     });
 
     if (!updatedNote) {
-      return successResponse(res, {
-        status: 404,
-        message: "Note not found",
-        data: null,
-      });
+      return res
+        .status(404)
+        .json(formatSuccessResponse(null, "Note not found"));
     }
 
     const io = req.app.get("io");
@@ -124,10 +126,9 @@ const updateNote = async (req: Request, res: Response, next: NextFunction) => {
     // clear redis cache
     await clearNotesCache();
 
-    return successResponse(res, {
-      message: "Note updated successfully",
-      data: updatedNote,
-    });
+    return res
+      .status(200)
+      .json(formatSuccessResponse(updatedNote, "Note updated successfully"));
   } catch (error) {
     console.log("🚀 ~ updateNote ~ error:", error);
     next(error);
@@ -150,11 +151,9 @@ const deleteNote = async (req: Request, res: Response, next: NextFunction) => {
     console.log("🚀 ~ deleteNote ~ deletedNote:", deletedNote);
 
     if (!deletedNote) {
-      return successResponse(res, {
-        status: 404,
-        message: "Note not found",
-        data: null,
-      });
+      return res
+        .status(404)
+        .json(formatSuccessResponse(null, "Note not found"));
     }
     const io = req.app.get("io");
     io.emit("note:deleted", deletedNote);
@@ -162,10 +161,9 @@ const deleteNote = async (req: Request, res: Response, next: NextFunction) => {
     // clear redis cache
     await clearNotesCache();
 
-    return successResponse(res, {
-      message: "Note deleted successfully",
-      data: deletedNote,
-    });
+    return res
+      .status(200)
+      .json(formatSuccessResponse(deletedNote, "Note deleted successfully"));
   } catch (error) {
     console.log("🚀 ~ deleteNote ~ error:", error);
     next(error);
