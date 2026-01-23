@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type {AnySchema, ValidationError} from "joi"
 
-const validate = (schema:AnySchema) => {
+export const validate = (schema:AnySchema) => {
   return (req:Request, res:Response, next:NextFunction) => {
 
     console.log("req.body",req.body)
@@ -19,4 +19,3 @@ const validate = (schema:AnySchema) => {
   };
 };
 
-module.exports = validate;

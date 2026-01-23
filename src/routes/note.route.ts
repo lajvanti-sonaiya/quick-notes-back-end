@@ -1,17 +1,25 @@
-const express=require('express')
-const { createNote, getNote, updateNote, deleteNote } = require('../controller/note.controller')
-const { noteAddValidation,noteUpdateValidation } = require('../validation/note.validation')
-const validate = require('../middleware/validate')
-const router=express.Router()
+import express from "express";
+import {
+  createNote,
+  getNote,
+  updateNote,
+  deleteNote,
+} from "../controller/note.controller.js";
+import {
+  noteAddValidation,
+  noteUpdateValidation,
+} from "../validation/note.validation.js";
+import { validate } from "../middleware/validate.js";
+
+const router = express.Router();
 
 // Create a new note
-router.post('/',validate(noteAddValidation),createNote)
+router.post("/", validate(noteAddValidation), createNote);
 // Get all notes
-router.get('/',getNote)
+router.get("/", getNote);
 // Update a note by ID
-router.patch('/:id',validate(noteUpdateValidation),updateNote)
+router.patch("/:id", validate(noteUpdateValidation), updateNote);
 // Delete a note by ID
-router.delete("/:id",deleteNote)
+router.delete("/:id", deleteNote);
 
-module.exports=router
-
+export default router;

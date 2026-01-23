@@ -1,4 +1,3 @@
-import type { Response } from "express";
 
 // const successResponse = (
 //   res: Response,
@@ -38,4 +37,3 @@ export const formaterrorResponse = (error: any, message?: string) => {
   };
 };
 
-module.exports = { formatSuccessResponse, formaterrorResponse };

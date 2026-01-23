@@ -1,14 +1,14 @@
 import type { Request, Response, NextFunction } from "express";
 import type { Socket } from "socket.io";
-import { formaterrorResponse } from "./utills/response";
+import { formaterrorResponse } from "./utills/response.js";
+import express from "express";
+import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
+import noteRouter from "./routes/note.route.js";
+import connectDatabase from "./utills/connectDatabase.js";
+import { envObj } from "./config/index.js";
 
-const express = require("express");
-const cors = require("cors");
-const noteRouter = require("./routes/note.route");
-const connectDatabase = require("./utills/connectDatabase");
-const http = require("http");
-const { Server } = require("socket.io");
-const { envObj } = require("./config");
 
 // app created
 const app = express();

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const {envObj}=require("../config/index")
+import { envObj } from "../config/index.js";
 
 const connectDatabase = async () => {
   try {
@@ -11,5 +11,5 @@ const connectDatabase = async () => {
   }
 };
 
-module.exports = connectDatabase;
+ export default connectDatabase;
 

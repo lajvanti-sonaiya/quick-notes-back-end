@@ -1,10 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
-import redis from "../utills/redis/redisConnection";
-import { clearNotesCache } from "../utills/redis/redisHelper";
-import { formatSuccessResponse } from "../utills/response";
-const Note = require("../models/note.model");
+import redis from "../utills/redis/redisConnection.js";
+import { clearNotesCache } from "../utills/redis/redisHelper.js";
+import { formatSuccessResponse } from "../utills/response.js";
+import Note from "../models/note.model.js"
 
-const createNote = async (req: Request, res: Response, next: NextFunction) => {
+export const createNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const note = await new Note(req.body);
     await note.save();
@@ -24,7 +24,7 @@ const createNote = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getNote = async (req: Request, res: Response, next: NextFunction) => {
+export const getNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { category, search, page, limit } = req.query;
     let filter: Record<string, any> = { isDeleted: false };
@@ -106,7 +106,7 @@ const getNote = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const updateNote = async (req: Request, res: Response, next: NextFunction) => {
+export const updateNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -135,7 +135,7 @@ const updateNote = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const deleteNote = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteNote = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -170,4 +170,3 @@ const deleteNote = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-module.exports = { createNote, getNote, updateNote, deleteNote };
