@@ -13,4 +13,6 @@ export const envObj = {
   DATABSE_URL: required("DATABSE_URL"),
   REDIS_HOST: required("REDIS_HOST"),
   REDIS_PORT: required("REDIS_PORT"),
+  REDIS_USERNAME:required("REDIS_USERNAME"),
+  REDIS_PASSWORD:required("REDIS_PASSWORD")
 };
