@@ -13,7 +13,7 @@ import { envObj } from "./config/index.js";
 // app created
 const app = express();
 
-//htto server
+//http server
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -47,13 +47,6 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   res.status(error.statusCode || 500)
     .json(formaterrorResponse(error, error.message || "something went wrong"));
 });
-
-//global exception handler
-
-//like this erroe express will not catch
-// setTimeout(() => {
-//   throw new Error("Crash after 2 seconds");
-// }, 2000);
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);

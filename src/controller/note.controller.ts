@@ -77,17 +77,6 @@ export const getNote = async (req: Request, res: Response, next: NextFunction) =
     // if key is not available in redis create new
     await redis.set(redisKey, JSON.stringify(responseData), "EX", 600);
 
-    // return res.status(200).json(
-    //   formatApiResponse(
-    //     {
-    //       notes,
-    //       total,
-    //       page: pageNumber,
-    //       limit: limitNumber,
-    //     },
-    //     notes.length ? "Notes fetched successfully" : "No notes found",
-    //   ),
-    // );
 
     return res.status(200).json(
       formatSuccessResponse(

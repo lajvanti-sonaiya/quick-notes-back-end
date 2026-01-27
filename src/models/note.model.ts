@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import { CATEGORY_ENUM } from "../utills/constants.js";
 const noteSchema = new mongoose.Schema(
   {
     title: {
@@ -14,7 +14,7 @@ const noteSchema = new mongoose.Schema(
 
     category: {
       type: String,
-      enum: ["personal", "work", "ideas"],
+      enum: CATEGORY_ENUM,
       required: true,
     },
 
