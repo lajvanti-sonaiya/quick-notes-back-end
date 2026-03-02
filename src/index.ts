@@ -6,9 +6,10 @@ import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 import noteRouter from "./routes/note.route.js";
+import userRouter from "./routes/user.route.js";
 import connectDatabase from "./utills/connectDatabase.js";
 import { envObj } from "./config/index.js";
-
+import { clerkMiddleware } from "@clerk/express";
 
 // app created
 const app = express();
@@ -25,6 +26,10 @@ const io = new Server(server, {
 io.on("connection", (socket: Socket) => {
   console.log("socket connected:", socket.id);
 
+  socket.on("join", (userId: string) => {
+    socket.join(userId);
+  });
+
   socket.on("disconnect", () => {
     console.log("socket disconnected:", socket.id);
   });
@@ -39,12 +44,16 @@ app.get("/", (req: Request, res: Response) => {
 // middelware
 app.use(cors());
 app.use(express.json());
+app.use(clerkMiddleware());
+
 app.use("/api/notes", noteRouter);
+app.use("/api/users", userRouter);
 
 //global error handler
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   console.log("🚀 ~ error:", error);
-  res.status(error.statusCode || 500)
+  res
+    .status(error.statusCode || 500)
     .json(formaterrorResponse(error, error.message || "something went wrong"));
 });
 

@@ -1,33 +1,69 @@
 import type { Request, Response, NextFunction } from "express";
 import redis from "../utills/redis/redisConnection.js";
 import { clearNotesCache } from "../utills/redis/redisHelper.js";
-import { formatSuccessResponse } from "../utills/response.js";
-import Note from "../models/note.model.js"
+import {
+  formaterrorResponse,
+  formatSuccessResponse,
+} from "../utills/response.js";
+import Note from "../models/note.model.js";
+import { getAuth } from "@clerk/express";
 
-export const createNote = async (req: Request, res: Response, next: NextFunction) => {
+export const createNote = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const note = await new Note(req.body);
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json(formaterrorResponse(false, "Note created successfunotelly"));
+    }
+
+    const lastNote = await Note.findOne({
+      clerkId: userId,
+      isPinned: false,
+      isDeleted: false,
+    }).sort({ order: -1 });
+
+    const newOrder = lastNote ? Number(lastNote?.order) + 1 : 1;
+
+    const note = await new Note({
+      ...req.body,
+      order: newOrder,
+      clerkId: userId,
+    });
     await note.save();
 
     const io = req.app.get("io");
-    io.emit("note:created", note);
+    io.to(userId).emit("note:created", note);
 
     // clear redis cache
     await clearNotesCache();
 
     return res
       .status(201)
-      .json(formatSuccessResponse(note, "Note created successfully"));
+      .json(formatSuccessResponse(note, "Note created successfunotelly"));
   } catch (error) {
     console.log("🚀 ~ createNote ~ error:", error);
     next(error);
   }
 };
 
-export const getNote = async (req: Request, res: Response, next: NextFunction) => {
+export const getNote = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { category, search, page, limit } = req.query;
-    let filter: Record<string, any> = { isDeleted: false };
+    const { userId } = getAuth(req);
+    console.log("🚀 ~ getNote ~ userId:", userId);
+    if (!userId) return res.status(401).json({ error: "Not signed in" });
+
+    let filter: Record<string, any> = { isDeleted: false, clerkId: userId };
 
     const pageNumber = Number(page ?? 0);
     const limitNumber = Number(limit ?? 10);
@@ -61,7 +97,7 @@ export const getNote = async (req: Request, res: Response, next: NextFunction) =
 
     const [notes, total] = await Promise.all([
       Note.find(filter)
-        .sort({ isPinned: -1, createdAt: -1 })
+        .sort({ isPinned: -1, order: 1 })
         .skip(skip)
         .limit(limitNumber),
 
@@ -158,4 +194,29 @@ export const deleteNote = async (req: Request, res: Response, next: NextFunction
     next(error);
   }
 };
+export const updateNotesOrder = async (req: Request, res: Response) => {
+  try {
+    const { notes } = req.body; 
 
+    const bulkOps = notes.map((note: any) => ({
+      updateOne: {
+        filter: { _id: note._id },
+        update: { order: note.order },
+      },
+    }));
+
+    // clear redis cache
+    await clearNotesCache();
+
+    await Note.bulkWrite(bulkOps);
+
+    // await clearNotesCache();
+
+        return res
+      .status(200)
+      .json(formatSuccessResponse(null, "Order"));
+
+  } catch (error) {
+    console.log(error);
+  }
+};

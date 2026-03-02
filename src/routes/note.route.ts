@@ -4,6 +4,7 @@ import {
   getNote,
   updateNote,
   deleteNote,
+  updateNotesOrder,
 } from "../controller/note.controller.js";
 import {
   noteAddValidation,
@@ -17,6 +18,8 @@ const router = express.Router();
 router.post("/", validate(noteAddValidation), createNote);
 // Get all notes
 router.get("/", getNote);
+//update notes order
+router.patch("/updateNotesOrder",updateNotesOrder);
 // Update a note by ID
 router.patch("/:id", validate(noteUpdateValidation), updateNote);
 // Delete a note by ID

@@ -17,6 +17,7 @@ const noteSchema = new mongoose.Schema(
       enum: CATEGORY_ENUM,
       required: true,
     },
+    clerkId: { type: String, required: true },
 
     isPinned: {
       type: Boolean,
@@ -27,10 +28,15 @@ const noteSchema = new mongoose.Schema(
       default: false,
     },
 
-    deletedAt:{
-      type:Date,
-      default:null
-    }
+    order: {
+      type: Number,
+      default: 1,
+    },
+
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );

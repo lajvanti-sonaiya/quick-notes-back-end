@@ -13,6 +13,7 @@ export const noteUpdateValidation = Joi.object({
   content: Joi.string().max(500).optional(),
   category: Joi.string().valid("personal", "work", "ideas").optional(),
   isPinned: Joi.boolean(),
+  order: Joi.number().integer().min(1).optional(),
 });
 
 
