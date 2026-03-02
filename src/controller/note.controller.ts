@@ -131,7 +131,11 @@ export const getNote = async (
   }
 };
 
-export const updateNote = async (req: Request, res: Response, next: NextFunction) => {
+export const updateNote = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { id } = req.params;
 
@@ -160,7 +164,11 @@ export const updateNote = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const deleteNote = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteNote = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { id } = req.params;
 
@@ -173,7 +181,6 @@ export const deleteNote = async (req: Request, res: Response, next: NextFunction
       { isDeleted: true, deletedAt: new Date() },
       { new: true },
     );
-    console.log("🚀 ~ deleteNote ~ deletedNote:", deletedNote);
 
     if (!deletedNote) {
       return res
@@ -196,7 +203,7 @@ export const deleteNote = async (req: Request, res: Response, next: NextFunction
 };
 export const updateNotesOrder = async (req: Request, res: Response) => {
   try {
-    const { notes } = req.body; 
+    const { notes } = req.body;
 
     const bulkOps = notes.map((note: any) => ({
       updateOne: {
@@ -207,16 +214,13 @@ export const updateNotesOrder = async (req: Request, res: Response) => {
 
     // clear redis cache
     await clearNotesCache();
-
+    const io = req.app.get("io");
+    io.emit("note:OrderUpdated", notes);
     await Note.bulkWrite(bulkOps);
 
-    // await clearNotesCache();
-
-        return res
-      .status(200)
-      .json(formatSuccessResponse(null, "Order"));
-
+    return res.status(200).json(formatSuccessResponse(null, "Order"));
   } catch (error) {
     console.log(error);
   }
 };
+
