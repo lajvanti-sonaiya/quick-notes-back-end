@@ -204,6 +204,7 @@ export const deleteNote = async (
 export const updateNotesOrder = async (req: Request, res: Response) => {
   try {
     const { notes } = req.body;
+    const { userId } = getAuth(req);
 
     const bulkOps = notes.map((note: any) => ({
       updateOne: {
@@ -212,10 +213,14 @@ export const updateNotesOrder = async (req: Request, res: Response) => {
       },
     }));
 
+    const updatedAllNotes = await Note.find({ clerkId: userId }).sort({
+      order: 1,
+    });
+
     // clear redis cache
     await clearNotesCache();
     const io = req.app.get("io");
-    io.emit("note:OrderUpdated", notes);
+    io.emit("note:OrderUpdated", updatedAllNotes);
     await Note.bulkWrite(bulkOps);
 
     return res.status(200).json(formatSuccessResponse(null, "Order"));
