@@ -8,6 +8,10 @@ import {
 import Note from "../models/note.model.js";
 import { getAuth } from "@clerk/express";
 
+interface CloudinaryFile extends Express.Multer.File {
+  buffer: Buffer;
+}
+
 export const createNote = async (
   req: Request,
   res: Response,
@@ -113,7 +117,6 @@ export const getNote = async (
     // if key is not available in redis create new
     await redis.set(redisKey, JSON.stringify(responseData), "EX", 600);
 
-
     return res.status(200).json(
       formatSuccessResponse(
         {
@@ -208,13 +211,16 @@ export const updateNotesOrder = async (req: Request, res: Response) => {
 
     const bulkOps = notes.map((note: any) => ({
       updateOne: {
-        filter: { _id: note._id ,clerkId: userId ,isDeleted: false},
+        filter: { _id: note._id, clerkId: userId, isDeleted: false },
         update: { order: note.order },
       },
     }));
     await Note.bulkWrite(bulkOps);
 
-    const updatedAllNotes = await Note.find({ clerkId: userId ,isDeleted: false }).sort({
+    const updatedAllNotes = await Note.find({
+      clerkId: userId,
+      isDeleted: false,
+    }).sort({
       order: 1,
     });
 
@@ -224,9 +230,23 @@ export const updateNotesOrder = async (req: Request, res: Response) => {
     const io = req.app.get("io");
     io.emit("note:OrderUpdated", updatedAllNotes);
 
-    return res.status(200).json(formatSuccessResponse(null, "Order updated successfully"));
+    return res
+      .status(200)
+      .json(formatSuccessResponse(null, "Order updated successfully"));
   } catch (error) {
     console.log(error);
   }
 };
 
+export const uploadNoteFile = async (req: Request, res: Response) => {
+  if (req.body.cloudinaryUrls) {
+    return res
+      .status(200)
+      .json(
+        formatSuccessResponse(
+          req.body.cloudinaryUrls,
+          "image added successfully",
+        ),
+      );
+  }
+};
