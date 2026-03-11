@@ -5,13 +5,14 @@ import {
   deleteNote,
   updateNotesOrder,
   uploadNoteFile,
+  deleteImagesFromCloudinary,
 } from "../controller/note.controller.js";
 import {
   noteAddValidation,
   noteUpdateValidation,
 } from "../validation/note.validation.js";
 import { validate } from "../middleware/validate.js";
-import { Router, Request, Response } from "express";
+import { Router} from "express";
 import { upload } from "../middleware/uploadMiddleware.js";
 import { uploadFileToClodinary } from "../middleware/uploadFileToClodinary.js";
 
@@ -39,4 +40,6 @@ router.post(
   uploadFileToClodinary,
   uploadNoteFile,
 );
+router.post("/images/delete", deleteImagesFromCloudinary);
+
 export default router;

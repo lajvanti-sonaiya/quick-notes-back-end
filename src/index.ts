@@ -28,6 +28,8 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("join", (userId: string) => {
     socket.join(userId);
+
+    console.log("socket join",userId)
   });
 
   socket.on("disconnect", () => {
@@ -51,7 +53,6 @@ app.use("/api/users", userRouter);
 
 //global error handler
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-  console.log("🚀 ~ error:", error);
   res
     .status(error.statusCode || 500)
     .json(formaterrorResponse(error, error.message || "something went wrong"));

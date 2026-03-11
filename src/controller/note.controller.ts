@@ -7,6 +7,7 @@ import {
 } from "../utills/response.js";
 import Note from "../models/note.model.js";
 import { getAuth } from "@clerk/express";
+import cloudinary from "../utills/cloudinaryConfig.js";
 
 interface CloudinaryFile extends Express.Multer.File {
   buffer: Buffer;
@@ -19,7 +20,6 @@ export const createNote = async (
 ) => {
   try {
     const { userId } = getAuth(req);
-
     if (!userId) {
       return res
         .status(401)
@@ -33,13 +33,14 @@ export const createNote = async (
     }).sort({ order: -1 });
 
     const newOrder = lastNote ? Number(lastNote?.order) + 1 : 1;
-
     const note = await new Note({
       ...req.body,
       order: newOrder,
       clerkId: userId,
     });
     await note.save();
+
+    console.log("note:created userId", userId);
 
     const io = req.app.get("io");
     io.to(userId).emit("note:created", note);
@@ -129,7 +130,6 @@ export const getNote = async (
       ),
     );
   } catch (error) {
-    console.log("🚀 ~ getNote ~ error:", error);
     next(error);
   }
 };
@@ -248,5 +248,39 @@ export const uploadNoteFile = async (req: Request, res: Response) => {
           "image added successfully",
         ),
       );
+  }
+};
+
+
+export const deleteImagesFromCloudinary = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { public_ids } = req.body;
+
+    if (!Array.isArray(public_ids) || public_ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "public_ids must be a non-empty array",
+      });
+    }
+
+    const decodedIds = public_ids.map((id) => decodeURIComponent(id));
+
+    const result = await cloudinary.api.delete_resources(decodedIds);
+    console.log("🚀 ~ deleteImagesFromCloudinary ~ result:", result)
+
+    return res
+      .status(200)
+      .json(formatSuccessResponse(result, "Images deleted successfully"));
+
+  } catch (error) {
+    console.error("🚀 deleteImagesFromCloudinary error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Image deletion failed",
+    });
   }
 };

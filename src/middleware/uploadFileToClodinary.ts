@@ -2,11 +2,10 @@ import type { Request, Response, NextFunction } from "express";
 import sharp from "sharp";
 import cloudinary from "../utills/cloudinaryConfig.js";
 
-
 export const uploadFileToClodinary = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const files = req.files as Express.Multer.File[];
@@ -19,23 +18,29 @@ export const uploadFileToClodinary = async (
         .resize({ width: 800, height: 600 })
         .toBuffer();
 
-      return new Promise<string>((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: "images",
-            resource_type: "auto",
-          },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve(result!.secure_url);
-          }
-        );
+      return new Promise<{ url: string; public_id: string }>(
+        (resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder: "images",
+              resource_type: "auto",
+            },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve({
+                url: result!.secure_url,
+                public_id: result!.public_id,
+              });
+            },
+          );
 
-        stream.end(resizedBuffer);
-      });
+          stream.end(resizedBuffer);
+        },
+      );
     });
 
     const cloudinaryUrls = await Promise.all(uploadPromises);
+    console.log("🚀 ~ uploadFileToClodinary ~ cloudinaryUrls:", cloudinaryUrls);
 
     req.body.cloudinaryUrls = cloudinaryUrls;
 
