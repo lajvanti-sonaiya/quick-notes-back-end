@@ -6,7 +6,6 @@ const noteSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
     content: {
       type: String,
       required: true,
@@ -27,12 +26,10 @@ const noteSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
     order: {
       type: Number,
       default: 1,
     },
-
     deletedAt: {
       type: Date,
       default: null,
@@ -49,6 +46,11 @@ const noteSchema = new mongoose.Schema(
         },
       },
     ],
+    columnId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Column",
+      required: true,
+    },
   },
   { timestamps: true },
 );

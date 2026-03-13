@@ -7,9 +7,11 @@ import http from "http";
 import { Server } from "socket.io";
 import noteRouter from "./routes/note.route.js";
 import userRouter from "./routes/user.route.js";
+import columnRouter from "./routes/column.route.js";
 import connectDatabase from "./utills/connectDatabase.js";
 import { envObj } from "./config/index.js";
 import { clerkMiddleware } from "@clerk/express";
+import taskRouter from "./routes/task.route.js"
 
 // app created
 const app = express();
@@ -29,7 +31,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("join", (userId: string) => {
     socket.join(userId);
 
-    console.log("socket join",userId)
+    console.log("socket join", userId);
   });
 
   socket.on("disconnect", () => {
@@ -50,6 +52,9 @@ app.use(clerkMiddleware());
 
 app.use("/api/notes", noteRouter);
 app.use("/api/users", userRouter);
+app.use("/api/colunms", columnRouter);
+app.use("/api/tasks", taskRouter);
+
 
 //global error handler
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {

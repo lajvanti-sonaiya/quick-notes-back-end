@@ -9,10 +9,6 @@ import Note from "../models/note.model.js";
 import { getAuth } from "@clerk/express";
 import cloudinary from "../utills/cloudinaryConfig.js";
 
-interface CloudinaryFile extends Express.Multer.File {
-  buffer: Buffer;
-}
-
 export const createNote = async (
   req: Request,
   res: Response,
@@ -52,11 +48,11 @@ export const createNote = async (
       .status(201)
       .json(formatSuccessResponse(note, "Note created successfunotelly"));
   } catch (error) {
-    console.log("🚀 ~ createNote ~ error:", error);
-    next(error);
+    return res
+      .status(500)
+      .json(formaterrorResponse(error, "error while creating note"));
   }
 };
-
 export const getNote = async (
   req: Request,
   res: Response,
@@ -130,10 +126,11 @@ export const getNote = async (
       ),
     );
   } catch (error) {
-    next(error);
+    return res
+      .status(500)
+      .json(formaterrorResponse(error, "error while fetching note"));
   }
 };
-
 export const updateNote = async (
   req: Request,
   res: Response,
@@ -162,11 +159,11 @@ export const updateNote = async (
       .status(200)
       .json(formatSuccessResponse(updatedNote, "Note updated successfully"));
   } catch (error) {
-    console.log("🚀 ~ updateNote ~ error:", error);
-    next(error);
+    return res
+      .status(500)
+      .json(formaterrorResponse(error, "error while updating note"));
   }
 };
-
 export const deleteNote = async (
   req: Request,
   res: Response,
@@ -200,8 +197,9 @@ export const deleteNote = async (
       .status(200)
       .json(formatSuccessResponse(deletedNote, "Note deleted successfully"));
   } catch (error) {
-    console.log("🚀 ~ deleteNote ~ error:", error);
-    next(error);
+    return res
+      .status(500)
+      .json(formaterrorResponse(error, "error while deleting note"));
   }
 };
 export const updateNotesOrder = async (req: Request, res: Response) => {
@@ -235,9 +233,11 @@ export const updateNotesOrder = async (req: Request, res: Response) => {
       .json(formatSuccessResponse(null, "Order updated successfully"));
   } catch (error) {
     console.log(error);
+    return res
+      .status(500)
+      .json(formaterrorResponse(error, "error while updating note order"));
   }
 };
-
 export const uploadNoteFile = async (req: Request, res: Response) => {
   if (req.body.cloudinaryUrls) {
     return res
@@ -250,8 +250,6 @@ export const uploadNoteFile = async (req: Request, res: Response) => {
       );
   }
 };
-
-
 export const deleteImagesFromCloudinary = async (
   req: Request,
   res: Response,
@@ -269,12 +267,11 @@ export const deleteImagesFromCloudinary = async (
     const decodedIds = public_ids.map((id) => decodeURIComponent(id));
 
     const result = await cloudinary.api.delete_resources(decodedIds);
-    console.log("🚀 ~ deleteImagesFromCloudinary ~ result:", result)
+    console.log("🚀 ~ deleteImagesFromCloudinary ~ result:", result);
 
     return res
       .status(200)
       .json(formatSuccessResponse(result, "Images deleted successfully"));
-
   } catch (error) {
     console.error("🚀 deleteImagesFromCloudinary error:", error);
 
@@ -282,5 +279,9 @@ export const deleteImagesFromCloudinary = async (
       success: false,
       message: "Image deletion failed",
     });
+
+    return res
+      .status(500)
+      .json(formaterrorResponse(error, "error while updating column"));
   }
 };
